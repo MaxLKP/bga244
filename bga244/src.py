@@ -20,7 +20,7 @@ class BGA244:
         self.port = port
         self.serial = serial.Serial(port, baudrate = BAUDRATE, parity = PARITY, bytesize = BYTESIZE, stopbits = STOPBITS, rtscts = RTSCTS, timeout = TIMEOUT)
         self.__check_connection()
-        errors = self.get_errors()
+        errors = self.__get_errors()
         print(f"The following error is buffered: {errors}")
         self.config = self.__get_gasconfig()
 
@@ -41,7 +41,7 @@ class BGA244:
         else: 
             print("Could not connect to BGA244")
 
-    def get_errors(self):
+    def __get_errors(self):
         self.serial.write(b"LERR?\r")
         time.sleep(0.1)
         error = self.serial.readline().decode("utf-8").strip()
