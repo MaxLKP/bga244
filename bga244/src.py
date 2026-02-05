@@ -30,46 +30,54 @@ class BGA244:
         print(f"The following error is buffered: {errors}")
         self.config = self.__get_gasconfig()
 
+    # Write command to BGA244
     def __write_command(self, command: str) -> None:
         command = command + "\r"
         command = command.encode("utf-8") 
         self.serial.write(command)
         time.sleep(0.1)
 
+    # Read BGA Response to command
     def __read_response(self):
         response = self.serial.readline().decode("utf-8").strip()
         time.sleep(0.1)
         return response
 
+    # Get list of gases from config file
     def __get_gasconfig(self):
         with open(os.path.join("bga244", "bga244", "gas_config", "gases.yaml")) as file:
             config = yaml.safe_load(file)
         return config
     
-    def __convert_casnr(self, casnr): # Takes CAS#, returns Gasname 
+    # Take CAS#, return Gasname
+    def __convert_casnr(self, casnr):  
         return self.config["cas#"][casnr]
 
-    def __convert_gas(self, gasname): # Takes Gasname, returns CAS#
+    # Take Gasname, return CAS#
+    def __convert_gas(self, gasname): 
         return self.config["gas"][gasname]
 
+    # Check for succesfull serial connection
     def __check_connection(self) -> None:
         if self.serial.isOpen():
             print(f"Connected to BGA244 on Port {self.port}")
         else: 
             print("Could not connect to BGA244")
 
+    # Read Errorbuffer
     def __get_errors(self):
         #self.serial.write(b"LERR?\r")
         #time.sleep(0.1)
         self.__write_command("LERR?")
         #error = self.serial.readline().decode("utf-8").strip()
-        error = self.__read_response()
-        if error:
-            return error
+        self.error = self.__read_response()
+        if self.error:
+            return self.error
         else:
             return 0
     
-    def __gas_check(self, gas1, gas2) -> None:
+    # Check if gases were set correctly
+    def __gas_check(self, gas1, gas2) -> None: 
         gases_out = self.get_gases()
         gases_in = {"prim": gas1, "sec": gas2}
         checksum = 0
@@ -82,7 +90,8 @@ class BGA244:
         else:
             print("Gases not set correctly.")
 
-    def __get_uncertainties(self):
+    # Get uncertainties of Measurement
+    def __get_uncertainties(self): 
         #self.serial.write(f"UNCT?\r".encode("utf-8"))
         #time.sleep(0.1)
         self.__write_command("UNCT?")
@@ -91,7 +100,8 @@ class BGA244:
         uncertainty = self.__read_response()
         return uncertainty
 
-    def set_conctype(self, conctype) -> None:
+    # Set unit for ratio measurement
+    def set_conctype(self, conctype) -> None: 
         conctypeint = CONCTYPES[conctype]
         #self.serial.write(f"BCTP {conctypeint}\r".encode("utf-8"))
         #time.sleep(0.1)
@@ -102,6 +112,7 @@ class BGA244:
         else:
             print("Error while setting Binary Concentration Type")
     
+    # Get measurement mode
     def get_conctype(self):
         #self.serial.write(f"BCTP?\r".encode("utf-8"))
         #time.sleep(0.1)
@@ -111,6 +122,7 @@ class BGA244:
         conctype = self.__read_response()
         return conctype
 
+    # Get currently set gases
     def get_gases(self):
         #self.serial.write(f"GASP?\r".encode("utf-8"))
         #time.sleep(0.1)
@@ -129,6 +141,7 @@ class BGA244:
         gases = {"prim": primary, "sec": secondary}
         return gases
     
+    # Set gas for purity analyisis
     def set_gas_singular(self, gas) -> None:
         if gas in self.config["gas"].keys():
             gas_conv = self.__convert_gas(gas)
@@ -139,6 +152,7 @@ class BGA244:
         #self.serial.write(f"GASP {gas_conv}\r".encode("utf-8"))
         self.__write_command(f"GASP {gas_conv}")
 
+    # Set gases for binary gas analysis
     def set_gases_binary(self, gas1, gas2) -> None:
         gases = [gas1, gas2]
         gases_conv = []
@@ -157,6 +171,7 @@ class BGA244:
         self.__write_command(f"GASS {gases_conv[1]}")
         self.__gas_check(gas1, gas2)
 
+    # Get result of binary gas analysis
     def get_binary_ratio(self):
         gases = self.get_gases()
         ratos = {f"gas1": [], "gas2": []}
@@ -171,6 +186,7 @@ class BGA244:
         ratos = {f"{gases['prim']}": float(ratos['gas1'][0]), f"{gases['sec']}": float(ratos['gas2'][0]), "uncert": uncertainty}
         return ratos
     
+    # Set measurement mode
     def set_mode(self, mode) -> None:
         if MODES[mode]:
             pass
