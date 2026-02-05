@@ -15,6 +15,8 @@ STOPBITS = 1
 RTSCTS = 1
 TIMEOUT = 5
 
+MODES = {"Binary Gas Analyzer": 1, "Gas Purity Analyzer": 2, "Physical Measurements": 3}
+
 class BGA244:
     def __init__(self, port):
         self.port = port
@@ -50,17 +52,64 @@ class BGA244:
         else:
             return 0
     
+    def __gas_check(self, gas1, gas2):
+        gases_out = self.get_gases()
+        gases_in = {"prim": gas1, "sec": gas2}
+        checksum = 0
+        for key in gases_in:
+            if gases_out[key] == gases_in[key]:
+                checksum += 1
+            else: pass
+        if checksum == 2:
+            print(f"Gases set to {gas1} and {gas2} success.")
+        else:
+            print("Gases not set correctly.")
+
+    def __get_uncertainties(self):
+        self.serial.write(f"UNCT?\r".encode("utf-8"))
+        time.sleep(0.1)
+        uncertainty = self.serial.readline().decode("utf-8").strip()
+        time.sleep(0.1)
+        return uncertainty
+
     def get_gases(self):
         self.serial.write(f"GASP?\r".encode("utf-8"))
+        time.sleep(0.1)
         primary = self.serial.readline().decode("utf-8").strip()
         primary = self.__convert_casnr(primary)
         time.sleep(0.1)
         self.serial.write(f"GASS?\r".encode("utf-8"))
+        time.sleep(0.1)
         secondary = self.serial.readline().decode("utf-8").strip()
         secondary = self.__convert_casnr(secondary)
         time.sleep(0.1)
         gases = {"prim": primary, "sec": secondary}
         return gases
+    
+    def set_gas_singular(self, gas):
+        if gas in self.config["gas"].keys():
+            gas_conv = self.__convert_gas(gas)
+        elif gas in self.config["cas#"].keys():
+            gas_conv = gas
+        else:
+            print(f"Gas {gas} not found in config.")
+        self.serial.write(f"GASP {gas_conv}\r".encode("utf-8"))
+
+    def set_gases_binary(self, gas1, gas2):
+        gases = [gas1, gas2]
+        gases_conv = []
+        for gas in gases:
+            if gas in self.config["gas"].keys():
+                gases_conv.append(self.__convert_gas(gas))
+            elif gas in self.config["cas#"].keys():
+                gases_conv.append(gas)
+            else: 
+                print(f"Gas {gas} not found in config.")
+        self.serial.write(f"GASP {gases_conv[0]}\r".encode("utf-8"))
+        time.sleep(0.1)
+        self.serial.write(f"GASS {gases_conv[1]}\r".encode("utf-8"))
+        time.sleep(0.1)
+        self.__gas_check(gas1, gas2)
 
     def get_binary_gas(self):
         gases = self.get_gases()
@@ -71,6 +120,19 @@ class BGA244:
             rato = self.serial.readline().decode("utf-8").strip()
             ratos[f"gas{i}"].append(rato)
             time.sleep(0.1)
-        ratos = {f"{gases['prim']}": ratos['gas1'], f"{gases['sec']}": ratos['gas2']}
+        uncertainty = self.__get_uncertainties()
+        ratos = {f"{gases['prim']}": float(ratos['gas1'][0]), f"{gases['sec']}": float(ratos['gas2'][0]), "uncert": uncertainty}
         return ratos
+    
+    def set_mode(self, mode):
+        if MODES[mode]:
+            pass
+        else: print(f"Unrecognized Mode {mode}.")
+        modeint = MODES[mode]
+        self.serial.write(f"MSMD{modeint}\r".encode("utf-8"))
+        time.sleep(0.1)
+        
+
+        
+
 
