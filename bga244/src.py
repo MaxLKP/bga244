@@ -41,7 +41,7 @@ class BGA244:
     def __convert_gas(self, gasname): # Takes Gasname, returns CAS#
         return self.config["gas"][gasname]
 
-    def __check_connection(self):
+    def __check_connection(self) -> None:
         if self.serial:
             print(f"Connected to BGA244 on Port {self.port}")
         else: 
@@ -56,7 +56,7 @@ class BGA244:
         else:
             return 0
     
-    def __gas_check(self, gas1, gas2):
+    def __gas_check(self, gas1, gas2) -> None:
         gases_out = self.get_gases()
         gases_in = {"prim": gas1, "sec": gas2}
         checksum = 0
@@ -76,7 +76,7 @@ class BGA244:
         time.sleep(0.1)
         return uncertainty
 
-    def set_conctype(self, conctype):
+    def set_conctype(self, conctype) -> None:
         conctypeint = CONCTYPES[conctype]
         self.serial.write(f"BCTP {conctypeint}\r".encode("utf-8"))
         time.sleep(0.1)
@@ -107,7 +107,7 @@ class BGA244:
         gases = {"prim": primary, "sec": secondary}
         return gases
     
-    def set_gas_singular(self, gas):
+    def set_gas_singular(self, gas) -> None:
         if gas in self.config["gas"].keys():
             gas_conv = self.__convert_gas(gas)
         elif gas in self.config["cas#"].keys():
@@ -116,7 +116,7 @@ class BGA244:
             print(f"Gas {gas} not found in config.")
         self.serial.write(f"GASP {gas_conv}\r".encode("utf-8"))
 
-    def set_gases_binary(self, gas1, gas2):
+    def set_gases_binary(self, gas1, gas2) -> None:
         gases = [gas1, gas2]
         gases_conv = []
         for gas in gases:
@@ -145,7 +145,7 @@ class BGA244:
         ratos = {f"{gases['prim']}": float(ratos['gas1'][0]), f"{gases['sec']}": float(ratos['gas2'][0]), "uncert": uncertainty}
         return ratos
     
-    def set_mode(self, mode):
+    def set_mode(self, mode) -> None:
         if MODES[mode]:
             pass
         else: print(f"Unrecognized Mode {mode}.")
