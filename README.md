@@ -18,5 +18,5 @@ bga244 = bga244.BGA244("COM3")
 ```
 ## Use
 A example to read the binary gas ratio is shown in bga244\bga244\bga244_example.py
-
-
+### License
+[MIT License](https://mit-license.org/)
