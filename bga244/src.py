@@ -30,6 +30,17 @@ class BGA244:
         print(f"The following error is buffered: {errors}")
         self.config = self.__get_gasconfig()
 
+    def __write_command(self, command: str) -> None:
+        command = command + "\r"
+        command = command.encode("utf-8") 
+        self.serial.write(command)
+        time.sleep(0.1)
+
+    def __read_response(self):
+        response = self.serial.readline().decode("utf-8").strip()
+        time.sleep(0.1)
+        return response
+
     def __get_gasconfig(self):
         with open(os.path.join("bga244", "bga244", "gas_config", "gases.yaml")) as file:
             config = yaml.safe_load(file)
@@ -42,15 +53,17 @@ class BGA244:
         return self.config["gas"][gasname]
 
     def __check_connection(self) -> None:
-        if self.serial:
+        if self.serial.isOpen():
             print(f"Connected to BGA244 on Port {self.port}")
         else: 
             print("Could not connect to BGA244")
 
     def __get_errors(self):
-        self.serial.write(b"LERR?\r")
-        time.sleep(0.1)
-        error = self.serial.readline().decode("utf-8").strip()
+        #self.serial.write(b"LERR?\r")
+        #time.sleep(0.1)
+        self.__write_command("LERR?")
+        #error = self.serial.readline().decode("utf-8").strip()
+        error = self.__read_response()
         if error:
             return error
         else:
@@ -70,16 +83,19 @@ class BGA244:
             print("Gases not set correctly.")
 
     def __get_uncertainties(self):
-        self.serial.write(f"UNCT?\r".encode("utf-8"))
-        time.sleep(0.1)
-        uncertainty = self.serial.readline().decode("utf-8").strip()
-        time.sleep(0.1)
+        #self.serial.write(f"UNCT?\r".encode("utf-8"))
+        #time.sleep(0.1)
+        self.__write_command("UNCT?")
+        #uncertainty = self.serial.readline().decode("utf-8").strip()
+        #time.sleep(0.1)
+        uncertainty = self.__read_response()
         return uncertainty
 
     def set_conctype(self, conctype) -> None:
         conctypeint = CONCTYPES[conctype]
-        self.serial.write(f"BCTP {conctypeint}\r".encode("utf-8"))
-        time.sleep(0.1)
+        #self.serial.write(f"BCTP {conctypeint}\r".encode("utf-8"))
+        #time.sleep(0.1)
+        self.__write_command(f"BCTP {conctypeint}")
         conctype_read = self.get_conctype()
         if int(conctype_read) == int(conctypeint):
             print(f"Binary Concentration Type set to {conctype} success.")
@@ -87,22 +103,28 @@ class BGA244:
             print("Error while setting Binary Concentration Type")
     
     def get_conctype(self):
-        self.serial.write(f"BCTP?\r".encode("utf-8"))
-        time.sleep(0.1)
-        conctype = self.serial.readline().decode("utf-8").strip()
-        time.sleep(0.1)
+        #self.serial.write(f"BCTP?\r".encode("utf-8"))
+        #time.sleep(0.1)
+        self.__write_command("BCTP?")
+        #conctype = self.serial.readline().decode("utf-8").strip()
+        #time.sleep(0.1)
+        conctype = self.__read_response()
         return conctype
 
     def get_gases(self):
-        self.serial.write(f"GASP?\r".encode("utf-8"))
-        time.sleep(0.1)
-        primary = self.serial.readline().decode("utf-8").strip()
-        time.sleep(0.1)
+        #self.serial.write(f"GASP?\r".encode("utf-8"))
+        #time.sleep(0.1)
+        self.__write_command("GASP?")
+        #primary = self.serial.readline().decode("utf-8").strip()
+        #time.sleep(0.1)
+        primary = self.__read_response()
         primary = self.__convert_casnr(primary)
-        self.serial.write(f"GASS?\r".encode("utf-8"))
-        time.sleep(0.1)
-        secondary = self.serial.readline().decode("utf-8").strip()
-        time.sleep(0.1)
+        #self.serial.write(f"GASS?\r".encode("utf-8"))
+        #time.sleep(0.1)
+        self.__write_command("GASS?")
+        #secondary = self.serial.readline().decode("utf-8").strip()
+        #time.sleep(0.1)
+        secondary = self.__read_response()
         secondary = self.__convert_casnr(secondary)
         gases = {"prim": primary, "sec": secondary}
         return gases
@@ -114,7 +136,8 @@ class BGA244:
             gas_conv = gas
         else:
             print(f"Gas {gas} not found in config.")
-        self.serial.write(f"GASP {gas_conv}\r".encode("utf-8"))
+        #self.serial.write(f"GASP {gas_conv}\r".encode("utf-8"))
+        self.__write_command(f"GASP {gas_conv}")
 
     def set_gases_binary(self, gas1, gas2) -> None:
         gases = [gas1, gas2]
@@ -126,21 +149,24 @@ class BGA244:
                 gases_conv.append(gas)
             else: 
                 print(f"Gas {gas} not found in config.")
-        self.serial.write(f"GASP {gases_conv[0]}\r".encode("utf-8"))
-        time.sleep(0.1)
-        self.serial.write(f"GASS {gases_conv[1]}\r".encode("utf-8"))
-        time.sleep(0.1)
+        #self.serial.write(f"GASP {gases_conv[0]}\r".encode("utf-8"))
+        #time.sleep(0.1)
+        self.__write_command(f"GASP {gases_conv[0]}")
+        #self.serial.write(f"GASS {gases_conv[1]}\r".encode("utf-8"))
+        #time.sleep(0.1)
+        self.__write_command(f"GASS {gases_conv[1]}")
         self.__gas_check(gas1, gas2)
 
     def get_binary_ratio(self):
         gases = self.get_gases()
         ratos = {f"gas1": [], "gas2": []}
         for i in range(1, 3):
-            self.serial.write(f"RATO?{i}\r".encode("utf-8"))
-            time.sleep(0.1)
-            rato = self.serial.readline().decode("utf-8").strip()
+            #self.serial.write(f"RATO?{i}\r".encode("utf-8"))
+            #time.sleep(0.1)
+            self.__write_command(f"RATO?{i}")
+            #rato = self.serial.readline().decode("utf-8").strip()
+            rato = self.__read_response()
             ratos[f"gas{i}"].append(rato)
-            time.sleep(0.1)
         uncertainty = self.__get_uncertainties()
         ratos = {f"{gases['prim']}": float(ratos['gas1'][0]), f"{gases['sec']}": float(ratos['gas2'][0]), "uncert": uncertainty}
         return ratos
@@ -150,8 +176,9 @@ class BGA244:
             pass
         else: print(f"Unrecognized Mode {mode}.")
         modeint = MODES[mode]
-        self.serial.write(f"MSMD{modeint}\r".encode("utf-8"))
-        time.sleep(0.1)
+        #self.serial.write(f"MSMD {modeint}\r".encode("utf-8"))
+        #time.sleep(0.1)
+        self.__write_command(f"MSMD {modeint}")
         
 
         
