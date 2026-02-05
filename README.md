@@ -9,7 +9,7 @@ git clone https://github.com/MaxLKP/bga244.git
 ```
 Then install the package:
 ```
-pip install bga244
+pip install .bga244
 ```
 Then the functions from the BGA244 class can be used for communication with the instrument, for example on *COM3*:
 ```
@@ -18,3 +18,4 @@ bga244 = bga244.BGA244("COM3")
 ```
 ## Use
 A example to read the binary gas ratio is shown in bga244\bga244\bga244_example.py
+
