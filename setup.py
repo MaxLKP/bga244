@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from os import path
 
 setup(
     name = "bga244",
@@ -8,6 +9,7 @@ setup(
     url = 'https://github.com/MaxLKP/bga244',
     license = 'MIT',
     packages = find_packages(),
-    package_data = {"bga244": ["gas_config/*.xlsx", "gas_config/*.txt", "gas_config/*.yaml"]},
-    install_requires = ['pyserial', 'pyyaml']
+    package_data = {"bga244": [path.join("bga244", "gas_config", "bga244_gases.xlsx"), path.join("bga244", "gas_config", "gaes.txt"), path.join("bga244", "gas_config", "gases.yaml"), path.join("bga244", "gas_config", "cas_nr.txt")]},
+    install_requires = ['pyserial', 'pyyaml', 'pandas'],
+    #scripts = [path.join("bga244", "bga244", "bga244_examples.py")]
 )

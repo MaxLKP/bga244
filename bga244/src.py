@@ -1,6 +1,9 @@
 import serial
 import time
 import yaml
+import os
+
+# https://github.com/MaxLKP/bga244?tab=readme-ov-file#readme
 
 # Manual:
 # https://www.thinksrs.com/downloads/pdfs/manuals/BGA244m.pdf
@@ -16,6 +19,7 @@ RTSCTS = 1
 TIMEOUT = 5
 
 MODES = {"Binary Gas Analyzer": 1, "Gas Purity Analyzer": 2, "Physical Measurements": 3}
+CONCTYPES = {"Mole Fraction": 1, "Mass Fraction": 2}
 
 class BGA244:
     def __init__(self, port):
@@ -27,7 +31,7 @@ class BGA244:
         self.config = self.__get_gasconfig()
 
     def __get_gasconfig(self):
-        with open(r"bga244\bga244\gas_config\gases.yaml", "r") as file:
+        with open(os.path.join("bga244", "bga244", "gas_config", "gases.yaml")) as file:
             config = yaml.safe_load(file)
         return config
     
@@ -72,17 +76,34 @@ class BGA244:
         time.sleep(0.1)
         return uncertainty
 
+    def set_conctype(self, conctype):
+        conctypeint = CONCTYPES[conctype]
+        self.serial.write(f"BCTP {conctypeint}\r".encode("utf-8"))
+        time.sleep(0.1)
+        conctype_read = self.get_conctype()
+        if int(conctype_read) == int(conctypeint):
+            print(f"Binary Concentration Type set to {conctype} success.")
+        else:
+            print("Error while setting Binary Concentration Type")
+    
+    def get_conctype(self):
+        self.serial.write(f"BCTP?\r".encode("utf-8"))
+        time.sleep(0.1)
+        conctype = self.serial.readline().decode("utf-8").strip()
+        time.sleep(0.1)
+        return conctype
+
     def get_gases(self):
         self.serial.write(f"GASP?\r".encode("utf-8"))
         time.sleep(0.1)
         primary = self.serial.readline().decode("utf-8").strip()
-        primary = self.__convert_casnr(primary)
         time.sleep(0.1)
+        primary = self.__convert_casnr(primary)
         self.serial.write(f"GASS?\r".encode("utf-8"))
         time.sleep(0.1)
         secondary = self.serial.readline().decode("utf-8").strip()
-        secondary = self.__convert_casnr(secondary)
         time.sleep(0.1)
+        secondary = self.__convert_casnr(secondary)
         gases = {"prim": primary, "sec": secondary}
         return gases
     
@@ -111,7 +132,7 @@ class BGA244:
         time.sleep(0.1)
         self.__gas_check(gas1, gas2)
 
-    def get_binary_gas(self):
+    def get_binary_ratio(self):
         gases = self.get_gases()
         ratos = {f"gas1": [], "gas2": []}
         for i in range(1, 3):
