@@ -150,7 +150,7 @@ class BGA244:
         gases = self.get_gases()
         ratos = {f"gas1": [], "gas2": []}
         for i in range(1, 3):
-            self.__write_command(f"RATO?{i}")
+            self.__write_command(f"RATO?{i}%")
             rato = self.__read_response()
             ratos[f"gas{i}"].append(rato)
         uncertainty = self.__get_uncertainties()
@@ -164,6 +164,26 @@ class BGA244:
         else: print(f"Unrecognized Mode {mode}.")
         modeint = MODES[mode]
         self.__write_command(f"MSMD {modeint}")
+
+    # Set Relative Mode - To be tested
+    def set_relmode(self):
+        self.__write_command("RELH")
+
+    # Get readings of internal sensor
+    def get_telemetry(self):
+        self.__write_command("PRAM? bar")
+        pressure_amb = self.__read_response()
+        pressure_gas = self.__write_command("PRES? bar")
+        pressure_gas = self.__read_response()
+        self.__write_command("TCEL? C")
+        temperature_cell = self.__read_response()
+        #self.__write_command("XALL?")
+        #xall = self.__read_response()
+        values = {"P_amb": pressure_amb, "P_gas": pressure_gas, "T_cell": temperature_cell}
+        return values
+
+
+    
         
 
         
