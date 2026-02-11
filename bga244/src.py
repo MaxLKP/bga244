@@ -181,6 +181,59 @@ class BGA244:
         #xall = self.__read_response()
         values = {"P_amb": pressure_amb, "P_gas": pressure_gas, "T_cell": temperature_cell}
         return values
+    
+    # Block Heater
+    # Get Endplate Temperature
+    def get_endplate(self):
+        self.__write_command("BLTM?")
+        backplate_temp = self.__read_response()
+        return backplate_temp
+    
+    # Get Block Heater Status and enable, Temp and Currents
+    def get_block_status(self):
+        bh_enable = self.get_bh_enable()
+        bh_status = self.get_bh_status()
+        bh_current = self.get_bh_currents()
+        bh_temperature = self.get_bh_temperature()
+        status = {"Enabled: ": bh_enable, "On/Off": bh_status, "Max. I": bh_current, "Temp": bh_temperature}
+        return status
+    
+    # Get Block Heater Status
+    def get_bh_status(self):
+        self.__write_command("HEST?")
+        status = self.__read_response()
+        return status
+
+    # Enable/Disable Block Heater
+    def set_bh_enable(self, enable = 0) -> None:
+        self.__write_command(f"HEEN {enable}")
+
+    # Get Block Heater Enable
+    def get_bh_enable(self):
+        self.__write_command("HEEN?")
+        enable = self.__read_response()
+        return enable
+
+    # Set Block Heater Current Max
+    def set_bh_currents(self, current = 0.0) -> None:
+        self.__write_command(f"HEIL {current}")
+
+    # Get Block Heater Current Max
+    def get_bh_currents(self):
+        self.__write_command("HEIL?")
+        currents_max = self.__read_response()
+        return currents_max
+    
+    # Set Block Heater Temperature
+    def set_bh_temperature(self, temp: float) -> None:
+        self.__write_command(f"HETM {temp}")
+    
+    # Get Block Heater Temperature
+    def get_bh_temperature(self):
+        self.__write_command("HETM?")
+        temp = self.__read_response()
+        return temp
+
 
 
     
