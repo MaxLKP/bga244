@@ -2,6 +2,7 @@ import serial
 import time
 import yaml
 import os
+import sys
 
 # Project:
 # https://github.com/MaxLKP/bga244?tab=readme-ov-file#readme
@@ -46,17 +47,27 @@ class BGA244:
 
     # Get list of gases from config file
     def __get_gasconfig(self):
-        with open(os.path.join("bga244", "bga244", "gas_config", "gases.yaml")) as file:
+        with open(os.path.join("bga244/bga244/gas_config/gases.yaml")) as file:
             config = yaml.safe_load(file)
         return config
     
     # Take CAS#, return Gasname
     def __convert_casnr(self, casnr):  
-        return self.config["cas#"][casnr]
+        if casnr in self.config["cas#"]: 
+            return self.config["cas#"][casnr]
+        elif casnr in self.config["gas"]:
+            return casnr
+        else:
+            sys.exit(f"No gas for {casnr} found.")
 
     # Take Gasname, return CAS#
     def __convert_gas(self, gasname): 
-        return self.config["gas"][gasname]
+        if gasname in self.config["gas"]:
+            return self.config["gas"][gasname]
+        elif gasname in self.config["cas#"]:
+            return gasname
+        else:
+            sys.exit(f"No CAS# for {gasname} found.")
 
     # Check for succesfull serial connection
     def __check_connection(self) -> None:
@@ -80,7 +91,7 @@ class BGA244:
         gases_in = {"prim": gas1, "sec": gas2}
         checksum = 0
         for key in gases_in:
-            if gases_out[key] == gases_in[key]:
+            if self.__convert_gas(gases_out[key]) == self.__convert_gas(gases_in[key]):
                 checksum += 1
             else: pass
         if checksum == 2:
@@ -167,25 +178,38 @@ class BGA244:
         self.__write_command(f"MSMD {modeint}")
 
     # Set Relative Mode - To be tested
-    def set_relmode(self):
+    def set_relmode(self) -> None:
         self.__write_command("RELH")
+
+    # Get Atmospheric pressure
+    def __get_p_atm(self):
+        self.__write_command("PRAM? bar")
+        p_amb = self.__read_response()
+        return p_amb
+
+    # Get Analysis Pressure
+    def __get_p_analysis(self):
+        self.__write_command("PRES? bar")
+        p_ana = self.__read_response()
+        return p_ana
+
+    # Get Cell temperature
+    def __get_t_cell(self):
+        self.__write_command("TCEL? C")
+        t_cell = self.__read_response()
+        return t_cell
 
     # Get readings of internal sensor
     def get_telemetry(self):
-        self.__write_command("PRAM? bar")
-        pressure_amb = self.__read_response()
-        pressure_gas = self.__write_command("PRES? bar")
-        pressure_gas = self.__read_response()
-        self.__write_command("TCEL? C")
-        temperature_cell = self.__read_response()
-        #self.__write_command("XALL?")
-        #xall = self.__read_response()
-        values = {"P_amb": pressure_amb, "P_gas": pressure_gas, "T_cell": temperature_cell}
+        pressure_ambient = self.__get_p_atm()
+        pressure_analysis = self.__get_p_analysis()
+        temperature_cell = self.__get_t_cell()
+        values = {"P_amb": pressure_ambient, "P_gas": pressure_analysis, "T_cell": temperature_cell}
         return values
     
     # Block Heater
     # Get Endplate Temperature
-    def get_endplate(self):
+    def __get_endplate(self):
         self.__write_command("BLTM?")
         backplate_temp = self.__read_response()
         return backplate_temp
@@ -196,7 +220,9 @@ class BGA244:
         bh_status = self.__get_bh_status()
         bh_current = self.__get_bh_currents()
         bh_temperature = self.__get_bh_temperature()
-        status = {"Enabled: ": bh_enable, "On/Off": bh_status, "Max. I": bh_current, "Temp": bh_temperature}
+        backplate_temp = self.__get_endplate()
+        pcb_temp = self.__get_pcb_temperature()
+        status = {"enabled: ": bh_enable, "on_off": bh_status, "max_current": bh_current, "temp_set": bh_temperature, "temp_bp": backplate_temp, "temp_pcb": pcb_temp}
         return status
     
     # Get Block Heater Status
@@ -234,6 +260,25 @@ class BGA244:
         self.__write_command("HETM?")
         temp = self.__read_response()
         return temp
+    
+    # Get PCB Temperature
+    def __get_pcb_temperature(self):
+        self.__write_command("PCTM?")
+        pcb_temp = self.__read_response()
+        return pcb_temp
+    
+    # Go to Home Screen
+    def set_homescreen(self) -> None:
+        self.__write_command("HOME")
+
+    # Get Global Units
+    def get_units(self):
+        units = {"ratio": [], "speed": [], "temperature": [], "pressure": []}
+        for i, key in enumerate(units.keys()):
+            self.__write_command(f"UNFA? {i + 1}")
+            units[key].append(self.__read_response())
+        return units
+
 
 
 
