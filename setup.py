@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-from os import path
 
 setup(
     name = "bga244",
@@ -10,7 +9,6 @@ setup(
     license = 'MIT',
     packages = find_packages(),
     include_package_data = True,
-    package_data = {"": ["*.yaml"], "": ["*.txt"]},
-    install_requires = ['pyserial', 'pyyaml', 'pandas'],
-    #scripts = [path.join("bga244", "bga244", "bga244_examples.py")]
+    package_data = {"": ["gas_config/*.yaml"], "": ["gas_config/*.txt"]},
+    install_requires = ['pyserial', 'pyyaml', 'importlib', 'pandas'],
 )

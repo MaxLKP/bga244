@@ -1,8 +1,8 @@
 import serial
 import time
 import yaml
-import os
 import sys
+from importlib import resources
 
 # Project:
 # https://github.com/MaxLKP/bga244?tab=readme-ov-file#readme
@@ -47,8 +47,7 @@ class BGA244:
 
     # Get list of gases from config file
     def __get_gasconfig(self):
-        with open(os.path.join("bga244/bga244/gas_config/gases.yaml")) as file:
-            config = yaml.safe_load(file)
+        config = yaml.safe_load(resources.files("bga244.gas_config").joinpath("gases.yaml").read_text())
         return config
     
     # Take CAS#, return Gasname
