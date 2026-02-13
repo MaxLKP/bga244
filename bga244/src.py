@@ -85,7 +85,7 @@ class BGA244:
             return 0
     
     # Check if gases were set correctly
-    def __gas_check(self, gas1, gas2) -> None: 
+    def __get_gas_check(self, gas1, gas2) -> None: 
         gases_out = self.get_gases()
         gases_in = {"prim": gas1, "sec": gas2}
         checksum = 0
@@ -154,7 +154,7 @@ class BGA244:
                 print(f"Gas {gas} not found in config.")
         self.__write_command(f"GASP {gases_conv[0]}")
         self.__write_command(f"GASS {gases_conv[1]}")
-        self.__gas_check(gas1, gas2)
+        self.__get_gas_check(gas1, gas2)
 
     # Get result of binary gas analysis
     def get_binary_ratio(self):
