@@ -19,10 +19,11 @@ bga244 = bga244.BGA244("COM3")
 ```
 If the config file for the factory gas table is not found automatically, the path can be added manually to the constructor to work around the issue:
 ```
-bga244 = bga244.BGA244("/dev/ttyUSB0", "/home/pi/Documents/bga244/bga244/gas_config/gases.yaml"")
+bga244 = bga244.BGA244("/dev/ttyUSB0", "/home/pi/Documents/bga244/bga244/gas_config/gases.yaml")
 ```
 A full example to read the binary gas ratio and useage of various functions is shown in bga244\bga244\bga244_example.py
 ### License
 [MIT License](https://mit-license.org/)
+
 
 
