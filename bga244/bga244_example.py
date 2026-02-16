@@ -7,6 +7,8 @@ import sys
 #-----------------
 # Connect to the BGA244 via the desired serial code
 bga244 = bga244.BGA244("COM3")
+# If the config file is not found automatically, give the path to the gases.yaml directly
+# bga244 = bga244.BGA244("COM3", "path/to/config/gases.yaml")
 # Set mode to Binary Gas Analysis
 bga244.set_mode("Binary Gas Analyzer")
 # Set concentration type to Mole Fraction
