@@ -24,8 +24,12 @@ MODES = {"Binary Gas Analyzer": 1, "Gas Purity Analyzer": 2, "Physical Measureme
 CONCTYPES = {"Mole Fraction": 1, "Mass Fraction": 2}
 
 class BGA244:
-    def __init__(self, port):
+    def __init__(self, port, config_path = None):
         self.port = port
+        if config_path != None:
+            self.config_path = config_path
+        else: 
+            self.config_path = None
         self.serial = serial.Serial(port, baudrate = BAUDRATE, parity = PARITY, bytesize = BYTESIZE, stopbits = STOPBITS, rtscts = RTSCTS, timeout = TIMEOUT)
         self.__check_connection()
         errors = self.__get_errors()
@@ -47,9 +51,13 @@ class BGA244:
 
     # Get list of gases from config file
     def __get_gasconfig(self):
-        config_path = Path(__file__).resolve().parent / "gas_config/gases.yaml"
-        with open(config_path, "r") as file:
-            config = yaml.safe_load(file)
+        if self.config_path == None:
+            self.config_path = Path(__file__).resolve().parent / "gas_config/gases.yaml"
+            with open(self.config_path, "r") as file:
+                config = yaml.safe_load(file)
+        else:
+            with open(self.config_path, "r") as file:
+                config = yaml.safe_load(file)
         return config
     
     # Take CAS#, return Gasname

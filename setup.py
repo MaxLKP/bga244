@@ -10,5 +10,5 @@ setup(
     packages = find_packages(),
     include_package_data = True,
     package_data = {"": ["gas_config/*.yaml"], "": ["gas_config/*.txt"]},
-    install_requires = ['pyserial', 'pyyaml', 'importlib', 'pandas'],
+    install_requires = ['pyserial', 'pyyaml', 'pandas', 'pathlib'],
 )
