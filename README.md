@@ -23,7 +23,7 @@ bga244 = bga244.BGA244("/dev/ttyUSB0", "/home/pi/Documents/bga244/bga244/gas_con
 ```
 A full example to read the binary gas ratio and useage of various functions is shown [here](https://github.com/MaxLKP/bga244/blob/master/bga244/bga244_example.py).
 ### License
-[MIT License](https://mit-license.org/)
+[MIT License](https://github.com/MaxLKP/bga244/blob/master/LICENSE)
 
 
 
