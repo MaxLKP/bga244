@@ -25,7 +25,7 @@ bga244 = bga244.BGA244("/dev/ttyUSB0", "/home/pi/Documents/bga244/bga244/gas_con
 ```
 A full example to read the binary gas ratio and useage of various functions is shown [here](https://github.com/MaxLKP/bga244/blob/master/bga244/bga244_example.py).
 ### License
-This is an independent implementation of the communication protocol of the BGA244 by Stanford Research Systems. It is not affiliated with, endorsed, or supported by Stanford Research Systems. All reference documents, datasheets, and specifications belong to their respective copyright holders.
+This is an independent implementation of the communication protocol of the BGA244 (Stanford Research Systems). It is not affiliated with, endorsed, or supported by Stanford Research Systems. All reference documents, datasheets, and specifications belong to their respective copyright holders.
 
 [MIT License](https://github.com/MaxLKP/bga244/blob/master/LICENSE)
 
